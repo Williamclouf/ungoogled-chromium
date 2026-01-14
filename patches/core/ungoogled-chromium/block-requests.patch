@@ -6,16 +6,17 @@
 # Password manager attempts to get credential affiliation
 # Attempts to check for updates even with autoupdate disabled
 # Dev tools attempts to download css data
---- a/chrome/browser/new_tab_page/one_google_bar/one_google_bar_loader_impl.cc
-+++ b/chrome/browser/new_tab_page/one_google_bar/one_google_bar_loader_impl.cc
-@@ -302,6 +302,7 @@ OneGoogleBarLoaderImpl::OneGoogleBarLoad
- OneGoogleBarLoaderImpl::~OneGoogleBarLoaderImpl() = default;
- 
- void OneGoogleBarLoaderImpl::Load(OneGoogleCallback callback) {
-+  return;
-   callbacks_.push_back(std::move(callback));
- 
-   // Note: If there is an ongoing request, abandon it. It's possible that
+
+# --- a/chrome/browser/new_tab_page/one_google_bar/one_google_bar_loader_impl.cc
+# +++ b/chrome/browser/new_tab_page/one_google_bar/one_google_bar_loader_impl.cc
+# @@ -302,6 +302,7 @@ OneGoogleBarLoaderImpl::OneGoogleBarLoad
+#  OneGoogleBarLoaderImpl::~OneGoogleBarLoaderImpl() = default;
+# 
+#  void OneGoogleBarLoaderImpl::Load(OneGoogleCallback callback) {
+# +  return;
+#    callbacks_.push_back(std::move(callback));
+# 
+#    // Note: If there is an ongoing request, abandon it. It's possible that
 --- a/chrome/browser/new_tab_page/promos/promo_service.cc
 +++ b/chrome/browser/new_tab_page/promos/promo_service.cc
 @@ -171,6 +171,7 @@ PromoService::PromoService(
@@ -90,18 +91,18 @@
    // This function is not supposed to be called if the previous operation is not
    // finished.
    if (state_ == REQUESTING) {
---- a/components/themes/ntp_background_service.cc
-+++ b/components/themes/ntp_background_service.cc
-@@ -90,9 +90,7 @@ void NtpBackgroundService::Shutdown() {
- void NtpBackgroundService::FetchCollectionInfo(
-     const std::string& filtering_label) {
-   // If a request is currently in progress, drop the new request.
--  if (collections_loader_ != nullptr) {
-     return;
--  }
-   collection_error_info_.ClearError();
- 
-   net::NetworkTrafficAnnotationTag traffic_annotation =
+# --- a/components/themes/ntp_background_service.cc
+# +++ b/components/themes/ntp_background_service.cc
+# @@ -90,9 +90,7 @@ void NtpBackgroundService::Shutdown() {
+#  void NtpBackgroundService::FetchCollectionInfo(
+#      const std::string& filtering_label) {
+#    // If a request is currently in progress, drop the new request.
+# -  if (collections_loader_ != nullptr) {
+#      return;
+# -  }
+#    collection_error_info_.ClearError();
+# 
+#    net::NetworkTrafficAnnotationTag traffic_annotation =
 --- a/components/update_client/update_checker.cc
 +++ b/components/update_client/update_checker.cc
 @@ -104,6 +104,7 @@ void UpdateCheckerImpl::CheckForUpdates(
