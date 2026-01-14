@@ -10,6 +10,7 @@ Module for cloning the source tree.
 
 import re
 import sys
+import subprocess
 from argparse import ArgumentParser
 from os import environ, pathsep
 from pathlib import Path
@@ -43,6 +44,29 @@ target_os_only = True;
 target_cpu = ['x64'];
 target_cpu_only = True;
 """
+
+
+def stream_command(command: list[str], **kwargs) -> int:
+    with subprocess.Popen(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT, # 将错误输出也合并到标准输出
+        text=True,                # 自动将字节流解码为字符串
+        bufsize=1,                 # 行缓冲
+        **kwargs
+    ) as process:
+
+        # 实时读取每一行
+        # 注意：如果 text=True，stdout 是 io.TextIOWrapper
+        # 如果 text=False，stdout 是 io.BufferedReader (字节流)
+        assert process.stdout is not None
+        for line in process.stdout:
+            print(line, end="", flush=True)
+
+    return_code = process.returncode
+    if return_code != 0:
+        raise subprocess.CalledProcessError(return_code, command)
+    return return_code
 
 
 def clone(args): # pylint: disable=too-many-branches, too-many-locals, too-many-statements
@@ -161,12 +185,17 @@ def clone(args): # pylint: disable=too-many-branches, too-many-locals, too-many-
     gcpath = dtpath / 'gclient'
     if iswin:
         gcpath = gcpath.with_suffix('.bat')
+
     # -f, -D, and -R forces a hard reset on changes and deletes deps that have been removed
-    run([
-        str(gcpath), 'sync', '-f', '-D', '-R', '--no-history', '--nohooks',
-        f'--sysroot={args.sysroot}'
-    ],
-        check=True)
+    _args = [
+        str(gcpath), 'sync', '-f', '-D', '-R', '--no-history', '--nohooks'
+    ]
+    get_logger().info(' '.join(_args))
+    try:
+        stream_command(_args, cwd=args.output)
+    except subprocess.CalledProcessError as e:
+        get_logger().error('gclient sync failed with exit code %d', e.returncode)
+        sys.exit(e.returncode)
 
     # Follow tarball procedure:
     # https://source.chromium.org/chromium/chromium/tools/build/+/main:recipes/recipes/publish_tarball.py
